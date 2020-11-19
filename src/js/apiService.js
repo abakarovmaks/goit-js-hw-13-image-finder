@@ -33,7 +33,7 @@ async function getData(url) {
 
 get searchQuery() {
   return this.searchQuery;
-}
+};
 
 set searchQuery(newSearchQuery) {
   this.searchQuery = newSearchQuery;
