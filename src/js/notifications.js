@@ -1,5 +1,4 @@
 import { error, notice, info } from '@pnotify/core';
-export default { errorNotFound, errorNotice, errorInfo, errorNoQuery };
 
 function errorNotFound() {
   error({
@@ -32,3 +31,5 @@ function errorNoQuery() {
     delay: 1500,
   });
 }
+
+export default { errorNotFound, errorNotice, errorInfo, errorNoQuery };

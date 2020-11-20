@@ -1,7 +1,7 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const paths = require('../utils/paths');
 
-module.exports = env => ({
+module.exports = (env) => ({
   devtool: 'cheap-eval-source-map',
   output: {
     filename: '[name].js',
@@ -28,7 +28,7 @@ module.exports = env => ({
     publicPath: '',
     historyApiFallback: true,
     compress: true,
-    port: 9999,
+    port: 5555,
     noInfo: true,
     quiet: true,
     clientLogLevel: 'warning',

@@ -1,9 +1,9 @@
-import ApiService from './apiService';
+import ApiService from './api-service';
 import getRefs from './get-refs';
 import markup from './markup';
-import lightbox from './lightbox';
+import modal from './lightbox';
 import throttle from 'lodash.throttle';
-import notify from './notifications';
+import notification from './notifications';
 
 const refs = getRefs();
 const apiService = new ApiService();
@@ -14,59 +14,72 @@ const throttledScroll = throttle(onScroll, 500);
 refs.form.addEventListener('submit', onSearch);
 refs.galleryContainer.addEventListener('click', openModal);
 
-function openModal(elem) {
-  if (elem.target.nodeName !== 'IMG') return;
-  lightbox.bigImg(elem.target.dataset.src).show;
-}
-
-function onSearch(elem) {
-  elem.preventDefault();
-  let searchingField = elem.currentTarget.elements.query;
-
-  if (searchingField.value === '') {
-    notify.errorNoQuery();
+function onSearch(e) {
+  e.preventDefault();
+  modal.loadingPlaceholder.show();
+  let searchField = e.currentTarget.elements.query;
+  if (searchField.value === '') {
+    notification.errorNoQuery();
+    modal.loadingPlaceholder.close();
     return;
   }
-  markup.clearImageCard();
+  markup.clearImageContainer();
   apiService.page = 1;
   apiService.searchQuery = searchField.value;
   try {
     apiService.countImages().then((count) => {
       if (count === 0) {
-        notify.errorNotFound();
+        notification.errorNotFound();
+        modal.loadingPlaceholder.close();
         return;
       }
-      apiService.getImages().then((data) => {
-        markup.imageCards(data);
+      apiService.fetchImages().then((data) => {
+        markup.renderImageCards(data);
         window.addEventListener('scroll', throttledScroll);
+        modal.loadingPlaceholder.close();
       });
     });
   } catch (error) {
-    notify.errorNotice();
+    notification.errorNotice();
+    modal.loadingPlaceholder.close();
   }
-  searchingField.value === '';
+  searchField.value === '';
 }
 
-function onScroll(elem) {
-  try {
-    apiService.countImages().then((count) => {
-      if (count === refs.galleryContainer.childElementCount) {
-        notify.errorInfo();
-        window.removeEventListener('scroll', throttledScroll);
-        return;
-      }
-      apiService.getImages().then((data) => {
-        apiService.page += 1;
-        currentWindowHeight = refs.galleryContainer.offsetHeight;
-        markup.imageCards(data);
-        window.scrollTo({
-          top: currentWindowHeight,
-          left: 0,
-          behavior: 'smooth',
+function onScroll(e) {
+  if (
+    pageYOffset + document.documentElement.clientHeight >
+    document.documentElement.scrollHeight - 1
+  ) {
+    modal.loadingPlaceholder.show();
+    try {
+      apiService.countImages().then((count) => {
+        if (count === refs.galleryContainer.childElementCount) {
+          notification.errorInfo();
+          window.removeEventListener('scroll', throttledScroll);
+          modal.loadingPlaceholder.close();
+          return;
+        }
+        apiService.fetchImages().then((data) => {
+          apiService.page += 1;
+          currentWindowHeight = refs.galleryContainer.offsetHeight;
+          markup.imageCards(data);
+          modal.loadingPlaceholder.close();
+          window.scrollTo({
+            top: currentWindowHeight,
+            left: 0,
+            behavior: 'smooth',
+          });
         });
       });
-    });
-  } catch (error) {
-    notify.errorNotice();
+    } catch (error) {
+      notification.errorNotice();
+      modal.loadingPlaceholder.close();
+    }
   }
+}
+
+function openModal(e) {
+  if (e.target.nodeName !== 'IMG') return;
+  modal.bigImg(e.target.dataset.src).show();
 }
