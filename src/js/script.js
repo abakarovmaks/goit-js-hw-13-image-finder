@@ -63,7 +63,7 @@ function onScroll(e) {
         apiService.fetchImages().then((data) => {
           apiService.page += 1;
           currentWindowHeight = refs.galleryContainer.offsetHeight;
-          markup.imageCards(data);
+          markup.renderImageCards(data);
           modal.loadingPlaceholder.close();
           window.scrollTo({
             top: currentWindowHeight,
